@@ -112,3 +112,24 @@ fn test_a_number_cut_short_is_refused() {
 		}
 	}
 }
+
+fn nested_lists(n int) []u8 {
+	mut data := [u8(0x0a), 0x00, 0x09, 0x01, `l`]
+	for _ in 1 .. n {
+		data << [u8(0x09), 0x02]
+	}
+	data << [u8(0x00), 0x00, 0x00]
+	return data
+}
+
+fn test_nbt_nested_past_the_limit_is_refused_not_a_crash() {
+	decode(nested_lists(511))!
+	if _ := decode(nested_lists(512)) {
+		assert false, 'lists nested past the limit were decoded'
+	}
+	if _ := decode(nested_lists(200_000)) {
+		assert false, 'lists nested 200,000 deep were decoded'
+	} else {
+		assert err.msg().contains('deeper'), 'refused for another reason: ${err}'
+	}
+}

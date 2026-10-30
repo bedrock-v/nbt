@@ -104,6 +104,10 @@ fn decode_payload(mut r Reader, id u8) !Tag {
 			return Tag(r.read_string()!)
 		}
 		tag_list {
+			r.enter()!
+			defer {
+				r.depth--
+			}
 			element_type := r.u8()!
 			length := r.length()!
 			mut values := []Tag{cap: length}
@@ -116,6 +120,10 @@ fn decode_payload(mut r Reader, id u8) !Tag {
 			})
 		}
 		tag_compound {
+			r.enter()!
+			defer {
+				r.depth--
+			}
 			mut values := map[string]Tag{}
 			for {
 				child_id := r.u8()!

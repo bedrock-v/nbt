@@ -2,11 +2,25 @@ module nbt
 
 import math
 
+// max_depth is how deeply lists and compounds may nest. Decoding recurses
+// once per level, so without it a few hundred kilobytes of nested lists from
+// a client overflow the stack.
+const max_depth = 512
+
 struct Reader {
 	data     []u8
 	encoding Encoding
 mut:
 	offset int
+	// depth is how many lists and compounds the reader is inside.
+	depth int
+}
+
+fn (mut r Reader) enter() ! {
+	if r.depth >= max_depth {
+		return error('nbt: nested deeper than ${max_depth} at offset ${r.offset}')
+	}
+	r.depth++
 }
 
 fn (mut r Reader) need(n int) ! {
