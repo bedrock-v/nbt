@@ -36,7 +36,7 @@
 						<div class="info">
 							<div class="module">nbt</div>
 							<div class="toggle-version-container">
-								<span>0.1.0 3e6ccec</span>
+								<span>0.2.0 6dd8bb8</span>
 								<div
 									id="dark-mode-toggle"
 									role="switch"
@@ -59,8 +59,57 @@
 				<nav class="search hidden"></nav>
 				<nav class="content hidden">
 					<ul>
-						<li class="open active">
-<div class="menu-row"><a href="./nbt.html">nbt</a></div>
+						<li class="open"><a href="#readme_nbt">README</a></li>
+<li class="open"><a href="#Constants">Constants</a></li>
+<li class="open"><a href="#decode">fn decode</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#encode">fn encode</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#encode_checked">fn encode_checked</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#new_compound">fn new_compound</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#tag_id">fn tag_id</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#Encoding.from">fn Encoding.from</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#Tag">type Tag</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#Encoding">enum Encoding</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#ByteArray">struct ByteArray</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#Compound">struct Compound</a>        <ul>
+<li><a href="#Compound.get">fn get</a></li>
+<li><a href="#Compound.set">fn set</a></li>
+</ul>
+</li>
+<li class="open"><a href="#DecodeResult">struct DecodeResult</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#IntArray">struct IntArray</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#List">struct List</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#LongArray">struct LongArray</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#Options">struct Options</a>        <ul>
+</ul>
+</li>
+<li class="open"><a href="#RootTag">struct RootTag</a>        <ul>
+</ul>
 </li>
 
 					</ul>
@@ -71,79 +120,20 @@
 					<div class="doc-content">
 								<section id="readme_nbt" class="doc-node">
 			<div class="title"><h1> nbt <a href="#readme_nbt">#</a></h1></div>
-<h1 id="nbt">nbt</h1>
-<p>A standalone V library for Minecraft Bedrock Edition's network (little-endian / varint) NBT format.</p>
-<h2 id="format">Format</h2>
-<p>Network NBT encoding:</p>
-<table>
-<thead>
-<tr>
-<th>Tag</th>
-<th>Encoding</th></tr></thead>
-<tbody>
-<tr>
-<td>Byte (1)</td>
-<td>1 byte</td></tr>
-<tr>
-<td>Short (2)</td>
-<td>LE int16</td></tr>
-<tr>
-<td>Int (3)</td>
-<td>zigzag varint (varint32)</td></tr>
-<tr>
-<td>Long (4)</td>
-<td>zigzag varint (varint64)</td></tr>
-<tr>
-<td>Float (5)</td>
-<td>LE f32</td></tr>
-<tr>
-<td>Double (6)</td>
-<td>LE f64</td></tr>
-<tr>
-<td>ByteArray (7)</td>
-<td>zigzag varint length + bytes</td></tr>
-<tr>
-<td>String (8)</td>
-<td>varuint32 length + UTF-8 bytes</td></tr>
-<tr>
-<td>List (9)</td>
-<td>element type byte + zigzag varint length + elements</td></tr>
-<tr>
-<td>Compound (10)</td>
-<td>(type byte, name, payload)* + TAG_End</td></tr>
-<tr>
-<td>IntArray (11)</td>
-<td>zigzag varint length + zigzag varints</td></tr>
-<tr>
-<td>LongArray (12)</td>
-<td>zigzag varint length + zigzag varints</td></tr></tbody></table>
-<p>Names are always written as <code>String</code> (with a varuint32 length prefix).</p>
-<h2 id="api">API</h2>
-<pre><code class="language-v"><span class="token keyword">import</span> nbt
-
-<span class="token comment">// Build</span>
-<span class="token keyword">mut</span> c <span class="token operator">:=</span> nbt<span class="token punctuation">.</span><span class="token function">new_compound</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
-c<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span><span class="token string">'name'</span><span class="token punctuation">,</span> nbt<span class="token punctuation">.</span><span class="token function">Tag</span><span class="token punctuation">(</span><span class="token string">'Steve'</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-c<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span><span class="token string">'health'</span><span class="token punctuation">,</span> nbt<span class="token punctuation">.</span><span class="token function">Tag</span><span class="token punctuation">(</span><span class="token builtin">i16</span><span class="token punctuation">(</span><span class="token number">20</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>
-
-root <span class="token operator">:=</span> nbt<span class="token punctuation">.</span><span class="token symbol">RootTag</span><span class="token punctuation">{</span> name<span class="token punctuation">:</span> <span class="token string">''</span><span class="token punctuation">,</span> tag<span class="token punctuation">:</span> nbt<span class="token punctuation">.</span><span class="token function">Tag</span><span class="token punctuation">(</span>c<span class="token punctuation">)</span> <span class="token punctuation">}</span>
-
-<span class="token comment">// Encode</span>
-data <span class="token operator">:=</span> nbt<span class="token punctuation">.</span><span class="token function">encode</span><span class="token punctuation">(</span>root<span class="token punctuation">)</span>
-
-<span class="token comment">// Decode (read = number of bytes consumed; for advancing a position within a stream)</span>
-res <span class="token operator">:=</span> nbt<span class="token punctuation">.</span><span class="token function">decode</span><span class="token punctuation">(</span>data<span class="token punctuation">)</span><span class="token operator">!</span>
-compound <span class="token operator">:=</span> res<span class="token punctuation">.</span>root<span class="token punctuation">.</span>tag <span class="token keyword">as</span> nbt<span class="token punctuation">.</span>Compound
-health <span class="token operator">:=</span> compound<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span><span class="token string">'health'</span><span class="token punctuation">)</span> <span class="token keyword">or</span> <span class="token punctuation">{</span> nbt<span class="token punctuation">.</span><span class="token function">Tag</span><span class="token punctuation">(</span><span class="token builtin">i16</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">}</span> <span class="token keyword">as</span> <span class="token builtin">i16</span></code></pre>
-<p><code>Tag</code> is a sum type with the following variants: <code>i8, i16, i32, i64, f32, f64, string, ByteArray, List, Compound, IntArray, LongArray</code>.</p>
-<h2 id="build">Build</h2>
-<pre><code class="language-bash">v <span class="token operator">-</span><span class="token keyword">shared</span> <span class="token operator">-</span>skip<span class="token operator">-</span>unused <span class="token punctuation">.</span></code></pre>
+<p>max_depth is how deeply lists and compounds may nest. Decoding recurses once per level, so without it a few hundred kilobytes of nested lists from a client overflow the stack.</p>
 
 </section>
 
 		<section id="Constants" class="doc-node const">
 			<div class="title"><h2>Constants <a href="#Constants">#</a></h2></div>
 
+
+</section>
+
+		<section id="" class="doc-node const">
+<pre class="signature">
+<code><span class="token keyword">const</span> max_fixed_string <span class="token operator">=</span> <span class="token number">65535</span></code></pre>
+<p>max_fixed_string is the longest string, in bytes, the fixed size forms can hold. Their string length is a u16.</p>
 
 </section>
 
@@ -241,7 +231,7 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="decode" class="doc-node">
 			<div class="title"><h2>fn decode <a href="#decode">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token function">decode</span><span class="token punctuation">(</span>data <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span><span class="token punctuation">)</span> <span class="token operator">!</span>DecodeResult</code></pre>
+<code><span class="token keyword">fn</span> <span class="token function">decode</span><span class="token punctuation">(</span>data <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span><span class="token punctuation">,</span> opts <span class="token type_name">Options</span><span class="token punctuation">)</span> <span class="token operator">!</span><span class="token type_name">DecodeResult</span></code></pre>
 
 
 </section>
@@ -249,15 +239,23 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="encode" class="doc-node">
 			<div class="title"><h2>fn encode <a href="#encode">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token function">encode</span><span class="token punctuation">(</span>root RootTag<span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span></code></pre>
+<code><span class="token keyword">fn</span> <span class="token function">encode</span><span class="token punctuation">(</span>root <span class="token type_name">RootTag</span><span class="token punctuation">,</span> opts <span class="token type_name">Options</span><span class="token punctuation">)</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span></code></pre>
+<p>encode writes a root tag. In the fixed size forms a string longer than max_fixed_string can't be written and encode panics on one rather than write NBT that misreads everything after it. encode_checked returns that as an error instead.</p>
 
+</section>
+
+		<section id="encode_checked" class="doc-node">
+			<div class="title"><h2>fn encode_checked <a href="#encode_checked">#</a></h2></div>
+<pre class="signature">
+<code><span class="token keyword">fn</span> <span class="token function">encode_checked</span><span class="token punctuation">(</span>root <span class="token type_name">RootTag</span><span class="token punctuation">,</span> opts <span class="token type_name">Options</span><span class="token punctuation">)</span> <span class="token operator">!</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span></code></pre>
+<p>encode_checked writes a root tag, or fails on one the encoding can't hold.</p>
 
 </section>
 
 		<section id="new_compound" class="doc-node">
 			<div class="title"><h2>fn new_compound <a href="#new_compound">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token function">new_compound</span><span class="token punctuation">(</span><span class="token punctuation">)</span> Compound</code></pre>
+<code><span class="token keyword">fn</span> <span class="token function">new_compound</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token type_name">Compound</span></code></pre>
 
 
 </section>
@@ -265,23 +263,31 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="tag_id" class="doc-node">
 			<div class="title"><h2>fn tag_id <a href="#tag_id">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token function">tag_id</span><span class="token punctuation">(</span>t Tag<span class="token punctuation">)</span> <span class="token builtin">u8</span></code></pre>
+<code><span class="token keyword">fn</span> <span class="token function">tag_id</span><span class="token punctuation">(</span>t <span class="token type_name">Tag</span><span class="token punctuation">)</span> <span class="token builtin">u8</span></code></pre>
 
+
+</section>
+
+		<section id="Encoding.from" class="doc-node">
+			<div class="title"><h2>fn Encoding.from <a href="#Encoding.from">#</a></h2></div>
+<pre class="signature">
+<code><span class="token keyword">fn</span> <span class="token type_name">Encoding</span><span class="token punctuation">.</span><span class="token function">from</span><span class="token punctuation">[</span><span class="token type_name">W</span><span class="token punctuation">]</span><span class="token punctuation">(</span>input <span class="token type_name">W</span><span class="token punctuation">)</span> <span class="token operator">!</span><span class="token type_name">Encoding</span></code></pre>
+<p>from returns the <code>Encoding</code> value of an integer or of a field name, or an error if there is none.</p>
 
 </section>
 
 		<section id="Tag" class="doc-node">
 			<div class="title"><h2>type Tag <a href="#Tag">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">type</span> Tag <span class="token operator">=</span> ByteArray
-	<span class="token operator">|</span> Compound
-	<span class="token operator">|</span> IntArray
-	<span class="token operator">|</span> List
-	<span class="token operator">|</span> LongArray
+<code><span class="token keyword">type</span> <span class="token type_name">Tag</span> <span class="token operator">=</span> <span class="token type_name">ByteArray</span>
+	<span class="token operator">|</span> <span class="token type_name">Compound</span>
+	<span class="token operator">|</span> <span class="token type_name">IntArray</span>
+	<span class="token operator">|</span> <span class="token type_name">List</span>
+	<span class="token operator">|</span> <span class="token type_name">LongArray</span>
 	<span class="token operator">|</span> <span class="token builtin">f32</span>
 	<span class="token operator">|</span> <span class="token builtin">f64</span>
 	<span class="token operator">|</span> <span class="token builtin">i16</span>
-	<span class="token operator">|</span> <span class="token builtin">i32</span>
+	<span class="token operator">|</span> i32
 	<span class="token operator">|</span> <span class="token builtin">i64</span>
 	<span class="token operator">|</span> <span class="token builtin">i8</span>
 	<span class="token operator">|</span> <span class="token builtin">string</span></code></pre>
@@ -289,10 +295,28 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 
 </section>
 
+		<section id="Encoding" class="doc-node">
+			<div class="title"><h2>enum Encoding <a href="#Encoding">#</a></h2></div>
+<pre class="signature">
+<code><span class="token keyword">enum</span> <span class="token type_name">Encoding</span> <span class="token punctuation">{</span>
+	<span class="token comment">// network_little_endian is what Bedrock sends over the network: ints, longs</span>
+	<span class="token comment">// and lengths are varints.</span>
+	network_little_endian
+	<span class="token comment">// little_endian is what Bedrock writes to disk (LevelDB worlds) and hashes</span>
+	<span class="token comment">// block states over: every number has a fixed size.</span>
+	little_endian
+	<span class="token comment">// big_endian is the fixed size form Java Edition uses and some Bedrock data</span>
+	<span class="token comment">// files are distributed in.</span>
+	big_endian
+<span class="token punctuation">}</span></code></pre>
+<p>Encoding is the form NBT is written in.</p>
+
+</section>
+
 		<section id="ByteArray" class="doc-node">
 			<div class="title"><h2>struct ByteArray <a href="#ByteArray">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">ByteArray</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">ByteArray</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
 	values <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">u8</span>
 <span class="token punctuation">}</span></code></pre>
@@ -303,9 +327,9 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="Compound" class="doc-node">
 			<div class="title"><h2>struct Compound <a href="#Compound">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">Compound</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">Compound</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
-	values <span class="token builtin">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span>Tag
+	values <span class="token builtin">map</span><span class="token punctuation">[</span><span class="token builtin">string</span><span class="token punctuation">]</span><span class="token type_name">Tag</span>
 <span class="token punctuation">}</span></code></pre>
 
 
@@ -314,7 +338,7 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="Compound.get" class="doc-node">
 			<div class="title"><h2>fn (Compound) get <a href="#Compound.get">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token punctuation">(</span>c <span class="token operator">&amp;</span>Compound<span class="token punctuation">)</span> <span class="token function">get</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token operator">?</span>Tag</code></pre>
+<code><span class="token keyword">fn</span> <span class="token punctuation">(</span>c <span class="token operator">&amp;</span><span class="token type_name">Compound</span><span class="token punctuation">)</span> <span class="token function">get</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">)</span> <span class="token operator">?</span><span class="token type_name">Tag</span></code></pre>
 
 
 </section>
@@ -322,7 +346,7 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="Compound.set" class="doc-node">
 			<div class="title"><h2>fn (Compound) set <a href="#Compound.set">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">fn</span> <span class="token punctuation">(</span><span class="token keyword">mut</span> c Compound<span class="token punctuation">)</span> <span class="token function">set</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">,</span> value Tag<span class="token punctuation">)</span></code></pre>
+<code><span class="token keyword">fn</span> <span class="token punctuation">(</span><span class="token keyword">mut</span> c <span class="token type_name">Compound</span><span class="token punctuation">)</span> <span class="token function">set</span><span class="token punctuation">(</span>key <span class="token builtin">string</span><span class="token punctuation">,</span> value <span class="token type_name">Tag</span><span class="token punctuation">)</span></code></pre>
 
 
 </section>
@@ -330,9 +354,9 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="DecodeResult" class="doc-node">
 			<div class="title"><h2>struct DecodeResult <a href="#DecodeResult">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">DecodeResult</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">DecodeResult</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span><span class="token punctuation">:</span>
-	root RootTag
+	root <span class="token type_name">RootTag</span>
 	read <span class="token builtin">int</span>
 <span class="token punctuation">}</span></code></pre>
 
@@ -342,9 +366,9 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="IntArray" class="doc-node">
 			<div class="title"><h2>struct IntArray <a href="#IntArray">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">IntArray</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">IntArray</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
-	values <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">i32</span>
+	values <span class="token punctuation">[</span><span class="token punctuation">]</span>i32
 <span class="token punctuation">}</span></code></pre>
 
 
@@ -353,10 +377,10 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="List" class="doc-node">
 			<div class="title"><h2>struct List <a href="#List">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">List</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">List</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
 	element_type <span class="token builtin">u8</span>
-	values       <span class="token punctuation">[</span><span class="token punctuation">]</span>Tag
+	values       <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token type_name">Tag</span>
 <span class="token punctuation">}</span></code></pre>
 
 
@@ -365,9 +389,21 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="LongArray" class="doc-node">
 			<div class="title"><h2>struct LongArray <a href="#LongArray">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">LongArray</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">LongArray</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
 	values <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token builtin">i64</span>
+<span class="token punctuation">}</span></code></pre>
+
+
+</section>
+
+		<section id="Options" class="doc-node">
+			<div class="title"><h2>struct Options <a href="#Options">#</a></h2></div>
+<div class="attributes"><div class="attribute">@[params]</div></div>
+<pre class="signature">
+<code><span class="token keyword">struct</span> <span class="token type_name">Options</span> <span class="token punctuation">{</span>
+<span class="token keyword">pub</span><span class="token punctuation">:</span>
+	encoding <span class="token type_name">Encoding</span> <span class="token operator">=</span> <span class="token enum_value">.</span><span class="token enum_value">network_little_endian</span>
 <span class="token punctuation">}</span></code></pre>
 
 
@@ -376,59 +412,19 @@ health <span class="token operator">:=</span> compound<span class="token punctua
 		<section id="RootTag" class="doc-node">
 			<div class="title"><h2>struct RootTag <a href="#RootTag">#</a></h2></div>
 <pre class="signature">
-<code><span class="token keyword">struct</span> <span class="token symbol">RootTag</span> <span class="token punctuation">{</span>
+<code><span class="token keyword">struct</span> <span class="token type_name">RootTag</span> <span class="token punctuation">{</span>
 <span class="token keyword">pub</span> <span class="token keyword">mut</span><span class="token punctuation">:</span>
 	name <span class="token builtin">string</span>
-	tag  Tag
+	tag  <span class="token type_name">Tag</span>
 <span class="token punctuation">}</span></code></pre>
 
 
 </section>
 
 
-						<div class="footer">Powered by vdoc. Generated on: 12 Jul 2026 21:23:00</div>
+						<div class="footer">Powered by vdoc. Generated on: 31 Oct 2026 00:58:39</div>
 					</div>
-					<div class="doc-toc"><ul><li class="open"><a href="#readme_nbt">README</a></li>
-<li class="open"><a href="#Constants">Constants</a></li>
-<li class="open"><a href="#decode">fn decode</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#encode">fn encode</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#new_compound">fn new_compound</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#tag_id">fn tag_id</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#Tag">type Tag</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#ByteArray">struct ByteArray</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#Compound">struct Compound</a>        <ul>
-<li><a href="#Compound.get">fn get</a></li>
-<li><a href="#Compound.set">fn set</a></li>
-</ul>
-</li>
-<li class="open"><a href="#DecodeResult">struct DecodeResult</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#IntArray">struct IntArray</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#List">struct List</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#LongArray">struct LongArray</a>        <ul>
-</ul>
-</li>
-<li class="open"><a href="#RootTag">struct RootTag</a>        <ul>
-</ul>
-</li>
-</ul></div>
+					
 				</div>
 			</div>
 		</div>
