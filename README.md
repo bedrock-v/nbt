@@ -1,7 +1,13 @@
 # nbt
 
-A standalone V library for Minecraft Bedrock Edition's network (little-endian /
-varint) NBT format.
+A standalone V library for Minecraft's NBT format, in the three forms Bedrock
+uses:
+
+| Encoding | Used for |
+|----------|----------|
+| `network_little_endian` (default) | packets |
+| `little_endian` | world saves (LevelDB) and block state hashes |
+| `big_endian` | Java Edition and some distributed data files |
 
 ## Format
 
@@ -24,6 +30,11 @@ Network NBT encoding:
 
 Names are always written as `String` (with a varuint32 length prefix).
 
+The fixed size forms differ from the table: Short is 2 bytes, Int and every
+length are 4, Long is 8, and a String's length is a u16, so a string can be at
+most 65535 bytes long. `little_endian` writes them least significant byte first,
+`big_endian` most significant first.
+
 ## API
 
 ```v
@@ -38,6 +49,10 @@ root := nbt.RootTag{ name: '', tag: nbt.Tag(c) }
 
 // Encode
 data := nbt.encode(root)
+disk := nbt.encode(root, encoding: .little_endian)
+// encode panics on a string longer than 65535 bytes in the fixed size forms;
+// encode_checked returns that as an error.
+checked := nbt.encode_checked(root, encoding: .little_endian)!
 
 // Decode (read = number of bytes consumed; for advancing a position within a stream)
 res := nbt.decode(data)!

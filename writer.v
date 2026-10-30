@@ -3,6 +3,7 @@ module nbt
 import math
 
 struct Writer {
+	encoding Encoding
 mut:
 	data []u8
 }
@@ -15,31 +16,41 @@ fn (mut w Writer) write_raw(b []u8) {
 	w.data << b
 }
 
-fn (mut w Writer) le_i16(v i16) {
-	x := u16(v)
-	w.data << u8(x)
-	w.data << u8(x >> 8)
-}
-
-fn (mut w Writer) le_u32(v u32) {
-	w.data << u8(v)
-	w.data << u8(v >> 8)
-	w.data << u8(v >> 16)
-	w.data << u8(v >> 24)
-}
-
-fn (mut w Writer) le_u64(v u64) {
-	for i in 0 .. 8 {
-		w.data << u8(v >> (u64(i) * 8))
+// fixed writes the low n bytes of v in the encoding's byte order. Only big
+// endian differs: the network form is little endian too.
+fn (mut w Writer) fixed(v u64, n int) {
+	for i in 0 .. n {
+		shift := if w.encoding == .big_endian { u64(n - 1 - i) * 8 } else { u64(i) * 8 }
+		w.data << u8(v >> shift)
 	}
 }
 
-fn (mut w Writer) le_f32(v f32) {
-	w.le_u32(math.f32_bits(v))
+fn (mut w Writer) short(v i16) {
+	w.fixed(u64(u16(v)), 2)
 }
 
-fn (mut w Writer) le_f64(v f64) {
-	w.le_u64(math.f64_bits(v))
+fn (mut w Writer) int(v i32) {
+	if w.encoding == .network_little_endian {
+		w.write_varint32(v)
+		return
+	}
+	w.fixed(u64(u32(v)), 4)
+}
+
+fn (mut w Writer) long(v i64) {
+	if w.encoding == .network_little_endian {
+		w.write_varint64(v)
+		return
+	}
+	w.fixed(u64(v), 8)
+}
+
+fn (mut w Writer) float(v f32) {
+	w.fixed(u64(math.f32_bits(v)), 4)
+}
+
+fn (mut w Writer) double(v f64) {
+	w.fixed(math.f64_bits(v), 8)
 }
 
 fn (mut w Writer) write_varuint32(value u32) {
@@ -76,7 +87,16 @@ fn (mut w Writer) write_varint64(value i64) {
 	w.write_varuint64(ux)
 }
 
-fn (mut w Writer) write_string(v string) {
-	w.write_varuint32(u32(v.len))
+// write_string refuses a string the fixed forms can't hold: their length is a
+// u16 and cutting the string would corrupt everything written after it.
+fn (mut w Writer) write_string(v string) ! {
+	if w.encoding == .network_little_endian {
+		w.write_varuint32(u32(v.len))
+	} else {
+		if v.len > max_fixed_string {
+			return error('nbt: a string of ${v.len} bytes is longer than ${max_fixed_string}, the most ${w.encoding} can hold')
+		}
+		w.fixed(u64(v.len), 2)
+	}
 	w.write_raw(v.bytes())
 }
