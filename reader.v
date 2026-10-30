@@ -3,7 +3,8 @@ module nbt
 import math
 
 struct Reader {
-	data []u8
+	data     []u8
+	encoding Encoding
 mut:
 	offset int
 }
@@ -28,36 +29,56 @@ fn (mut r Reader) read_raw(n int) ![]u8 {
 	return out
 }
 
-fn (mut r Reader) le_i16() !i16 {
-	r.need(2)!
-	v := u16(r.data[r.offset]) | (u16(r.data[r.offset + 1]) << 8)
-	r.offset += 2
-	return i16(v)
-}
-
-fn (mut r Reader) le_u32() !u32 {
-	r.need(4)!
-	v := u32(r.data[r.offset]) | (u32(r.data[r.offset + 1]) << 8) | (u32(r.data[r.offset + 2]) << 16) | (u32(r.data[r.offset + 3]) << 24)
-	r.offset += 4
-	return v
-}
-
-fn (mut r Reader) le_u64() !u64 {
-	r.need(8)!
+// fixed reads n bytes as an unsigned number in the encoding's byte order. Only
+// big endian differs: the network form is little endian too.
+fn (mut r Reader) fixed(n int) !u64 {
+	r.need(n)!
 	mut v := u64(0)
-	for i in 0 .. 8 {
-		v |= u64(r.data[r.offset + i]) << (u64(i) * 8)
+	for i in 0 .. n {
+		b := u64(r.data[r.offset + i])
+		if r.encoding == .big_endian {
+			v = v << 8 | b
+		} else {
+			v |= b << (u64(i) * 8)
+		}
 	}
-	r.offset += 8
+	r.offset += n
 	return v
 }
 
-fn (mut r Reader) le_f32() !f32 {
-	return math.f32_from_bits(r.le_u32()!)
+fn (mut r Reader) short() !i16 {
+	return i16(r.fixed(2)!)
 }
 
-fn (mut r Reader) le_f64() !f64 {
-	return math.f64_from_bits(r.le_u64()!)
+fn (mut r Reader) int() !i32 {
+	if r.encoding == .network_little_endian {
+		return r.read_varint32()
+	}
+	return i32(r.fixed(4)!)
+}
+
+fn (mut r Reader) long() !i64 {
+	if r.encoding == .network_little_endian {
+		return r.read_varint64()
+	}
+	return i64(r.fixed(8)!)
+}
+
+fn (mut r Reader) float() !f32 {
+	return math.f32_from_bits(u32(r.fixed(4)!))
+}
+
+fn (mut r Reader) double() !f64 {
+	return math.f64_from_bits(r.fixed(8)!)
+}
+
+// length reads the element count of an array or list.
+fn (mut r Reader) length() !int {
+	n := int(r.int()!)
+	if n < 0 || n > r.data.len - r.offset {
+		return error('nbt: length ${n} at offset ${r.offset} does not fit the buffer')
+	}
+	return n
 }
 
 fn (mut r Reader) read_varuint32() !u32 {
@@ -107,6 +128,10 @@ fn (mut r Reader) read_varint64() !i64 {
 }
 
 fn (mut r Reader) read_string() !string {
-	length := int(r.read_varuint32()!)
+	length := if r.encoding == .network_little_endian {
+		int(r.read_varuint32()!)
+	} else {
+		int(r.fixed(2)!)
+	}
 	return r.read_raw(length)!.bytestr()
 }

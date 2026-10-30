@@ -1,7 +1,7 @@
 Module {
 	name: 'nbt'
-	description: 'Standalone Minecraft Bedrock network (varint little-endian) NBT codec for V'
-	version: '0.1.0'
+	description: 'Standalone Minecraft NBT codec for V: Bedrock network, little-endian and big-endian'
+	version: '0.2.0'
 	license: 'MIT
 	dependencies: []
 }
